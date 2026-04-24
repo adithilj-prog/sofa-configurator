@@ -14,7 +14,7 @@ const FURNITURE_LIST: FurnitureItem[] = [
   { id: 'sofa', label: 'Sofa', videoSrc: '/videos/sofa.mp4', materialLabel: 'Plum Velvet' },
   { id: 'table', label: 'Coffee Table', videoSrc: '/videos/table.mp4', materialLabel: 'Nero Marquina' },
   { id: 'armchair', label: 'Armchair', videoSrc: '/videos/armchair.mp4', materialLabel: 'Sage Green' },
-  { id: 'lamp', label: 'Floor Lamp', videoSrc: '/videos/lamp.mp4', materialLabel: 'Gold Leaf' },
+  { id: 'lamp', label: 'Floor Lamp', videoSrc: '/videos/lamp.mp4', materialLabel: 'Gold Leaf & Frosted Glass' },
 ];
 
 function App() {
