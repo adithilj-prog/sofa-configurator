@@ -1,67 +1,98 @@
 import { useState } from 'react';
-import './index.css';
 import { Canvas } from '@react-three/fiber';
-// If Experience is now .tsx, this import will work perfectly
-import Experience from './Experience'; 
+import Experience from './Experience';
+import './index.css';
+
+// 1. Define types for better IntelliSense and error catching
+interface FurnitureItem {
+  id: string;
+  label: string;
+  videoSrc: string;
+}
+
+interface MaterialItem {
+  id: string;
+  label: string;
+}
+
+const MATERIALS: MaterialItem[] = [
+  { id: 'plum-velvet', label: 'Plum Velvet' },
+  { id: 'nero-marquina', label: 'Nero Marquina' },
+  { id: 'sage-green', label: 'Sage Green' },
+  { id: 'gold-leaf', label: 'Gold Leaf' },
+];
+
+const FURNITURE_LIST: FurnitureItem[] = [
+  { id: 'sofa', label: 'Sofa', videoSrc: '/videos/sofa.mp4' },
+  { id: 'table', label: 'Coffee Table', videoSrc: '/videos/table.mp4' },
+  { id: 'armchair', label: 'Armchair', videoSrc: '/videos/armchair.mp4' },
+  { id: 'lamp', label: 'Floor Lamp', videoSrc: '/videos/lamp.mp4' },
+];
 
 function App() {
-  const [lightIntensity, setLightIntensity] = useState(75);
-  const [selectedMaterial, setSelectedMaterial] = useState('wood');
-  const [selectedFurniture, setSelectedFurniture] = useState('sofa');
+  const [lightIntensity, setLightIntensity] = useState<number>(75);
+  const [selectedMaterial, setSelectedMaterial] = useState<string>('plum-velvet');
+  const [selectedFurniture, setSelectedFurniture] = useState<FurnitureItem>(FURNITURE_LIST[0]);
 
-  const materials = [
-    { id: 'wood', label: 'Wood' },
-    { id: 'marble', label: 'Marble' },
-    { id: 'metal', label: 'Metal' },
-    { id: 'fabric', label: 'Fabric' },
-    { id: 'glass', label: 'Glass' },
-    { id: 'leather', label: 'Leather' },
-  ];
+  // Logic to handle furniture change AND auto-select matching material
+  const handleFurnitureChange = (item: FurnitureItem) => {
+    setSelectedFurniture(item);
+    
+    if (item.id === 'armchair') {
+      setSelectedMaterial('sage-green');
+    } else if (item.id === 'sofa') {
+      setSelectedMaterial('plum-velvet');
+    } else if (item.id === 'table') {
+      setSelectedMaterial('nero-marquina');
+    } else if (item.id === 'lamp') {
+      setSelectedMaterial('gold-leaf');
+    }
+  };
 
-  const furniture = [
-    { id: 'sofa', label: 'Sofa', icon: 'sofa' },
-    { id: 'table', label: 'Coffee Table', icon: 'table' },
-    { id: 'chair', label: 'Armchair', icon: 'chair' },
-    { id: 'lamp', label: 'Floor Lamp', icon: 'lamp' },
-  ];
+  // Handle the screenshot capture
+  const handleRender = () => {
+    const canvas = document.querySelector('canvas');
+    if (canvas) {
+      const image = canvas.toDataURL("image/png");
+      const link = document.createElement('a');
+      link.download = `${selectedFurniture.id}-design.png`;
+      link.href = image;
+      link.click();
+    }
+  };
 
   return (
     <div className="app-container">
       <aside className="sidebar">
         <div className="sidebar-header">
-          {/* Logo SVG */}
-          <h1>Interior Design Architect</h1>
+          <h1>DesignArena</h1>
+          <p className="subtitle">3D Architectural Configurator</p>
         </div>
 
-        {/* Lighting Section */}
+        {/* Lighting Control */}
         <div className="settings-section">
-          <div className="section-header">
-            <h2>Lighting</h2>
-          </div>
+          <h2>Lighting</h2>
           <div className="control-group">
             <div className="control-label">
-              <span>Light Intensity</span>
+              <span>Intensity</span>
               <span className="control-value">{lightIntensity}%</span>
             </div>
-            <div className="slider-container">
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={lightIntensity}
-                onChange={(e) => setLightIntensity(Number(e.target.value))}
-              />
-            </div>
+            <input
+              type="range"
+              min="20"
+              max="150"
+              value={lightIntensity}
+              onChange={(e) => setLightIntensity(Number(e.target.value))}
+              className="custom-slider"
+            />
           </div>
         </div>
 
-        {/* Materials Section - Fixing the "Unused" Warning */}
+        {/* Materials Grid */}
         <div className="settings-section">
-          <div className="section-header">
-            <h2>Materials</h2>
-          </div>
+          <h2>Materials</h2>
           <div className="material-grid">
-            {materials.map((m) => (
+            {MATERIALS.map((m) => (
               <button
                 key={m.id}
                 className={`material-item ${selectedMaterial === m.id ? 'active' : ''}`}
@@ -73,31 +104,39 @@ function App() {
           </div>
         </div>
 
-        {/* Furniture Section */}
+        {/* Furniture Selection */}
         <div className="settings-section">
-          <div className="section-header">
-            <h2>Furniture</h2>
-          </div>
+          <h2>Collection</h2>
           <div className="furniture-list">
-            {furniture.map((item) => (
+            {FURNITURE_LIST.map((item) => (
               <button
                 key={item.id}
-                className={`furniture-item ${selectedFurniture === item.id ? 'active' : ''}`}
-                onClick={() => setSelectedFurniture(item.id)}
+                className={`furniture-item ${selectedFurniture.id === item.id ? 'active' : ''}`}
+                onClick={() => handleFurnitureChange(item)} // Updated: Uses logic handler
               >
-                <span>{item.label}</span>
+                {item.label}
               </button>
             ))}
           </div>
         </div>
+
+        <button className="render-btn" onClick={handleRender}>
+          Export Render (PNG)
+        </button>
       </aside>
 
       <main className="main-content">
-        <div className="video-container" style={{ position: 'relative', height: '500px', background: '#1a1a1a' }}>
-          <Canvas shadows camera={{ position: [0, 0, 4], fov: 45 }}>
+        <div 
+          className="canvas-viewport" 
+          style={{ 
+            filter: `brightness(${lightIntensity / 100})`, 
+            transition: 'filter 0.4s cubic-bezier(0.4, 0, 0.2, 1)' 
+          }}
+        >
+          <Canvas shadows gl={{ preserveDrawingBuffer: true }} camera={{ position: [0, 0, 4], fov: 45 }}>
             <Experience 
-              selectedFurniture={selectedFurniture} 
-              lightIntensity={lightIntensity} 
+              videoSrc={selectedFurniture.videoSrc} 
+              lightIntensity={lightIntensity / 100} 
             />
           </Canvas>
         </div>
