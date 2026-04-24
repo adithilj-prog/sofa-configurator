@@ -3,134 +3,101 @@ import { Canvas } from '@react-three/fiber';
 import Experience from './Experience';
 import './App.css';
 
-// 1. Data Definitions
 interface FurnitureItem {
   id: string;
   label: string;
   videoSrc: string;
+  materialLabel: string;
 }
 
-const MATERIALS = [
-  { id: 'wood', label: 'Wood' },
-  { id: 'marble', label: 'Marble' },
-  { id: 'metal', label: 'Metal' },
-  { id: 'fabric', label: 'Fabric' },
-  { id: 'glass', label: 'Glass' },
-  { id: 'leather', label: 'Leather' },
-];
-
 const FURNITURE_LIST: FurnitureItem[] = [
-  { id: 'sofa', label: 'Sofa', videoSrc: '/videos/sofa.mp4' },
-  { id: 'table', label: 'Coffee Table', videoSrc: '/videos/table.mp4' },
-  { id: 'armchair', label: 'Armchair', videoSrc: '/videos/armchair.mp4' },
-  { id: 'lamp', label: 'Floor Lamp', videoSrc: '/videos/lamp.mp4' },
+  { id: 'sofa', label: 'Sofa', videoSrc: '/videos/sofa.mp4', materialLabel: 'Plum Velvet' },
+  { id: 'table', label: 'Coffee Table', videoSrc: '/videos/table.mp4', materialLabel: 'Nero Marquina' },
+  { id: 'armchair', label: 'Armchair', videoSrc: '/videos/armchair.mp4', materialLabel: 'Sage Green' },
+  { id: 'lamp', label: 'Floor Lamp', videoSrc: '/videos/lamp.mp4', materialLabel: 'Gold Leaf' },
 ];
 
 function App() {
   const [lightIntensity, setLightIntensity] = useState<number>(75);
-  const [colorTemp, setColorTemp] = useState<number>(4500);
-  const [selectedMaterial, setSelectedMaterial] = useState<string>('fabric');
   const [selectedFurniture, setSelectedFurniture] = useState<FurnitureItem>(FURNITURE_LIST[0]);
 
-  const handleFurnitureChange = (item: FurnitureItem) => {
-    setSelectedFurniture(item);
-    if (item.id === 'armchair') setSelectedMaterial('fabric');
-    else if (item.id === 'sofa') setSelectedMaterial('fabric');
-    else if (item.id === 'table') setSelectedMaterial('marble');
-  };
-
-  const handleRender = () => {
+  const handleGenerateRender = () => {
     const canvas = document.querySelector('canvas');
     if (canvas) {
       const image = canvas.toDataURL("image/png");
       const link = document.createElement('a');
-      link.download = `DesignArena-${selectedFurniture.id}.png`;
+      link.download = `DesignArena-Render-${selectedFurniture.id}.png`;
       link.href = image;
       link.click();
     }
   };
 
   return (
-    <div className="app-wrapper">
-      <aside className="architect-sidebar">
-        <div className="brand-header">
-          <div className="brand-icon">🏛️</div>
-          <h1>Interior Design Architect</h1>
+    <div className="app-container">
+      <aside className="sidebar">
+        <div className="sidebar-header">
+          <h1 style={{color: 'var(--gold)', fontSize: '22px'}}>DesignArena</h1>
+          <p style={{fontSize: '11px', color: 'var(--text-muted)'}}>3D Architectural Configurator</p>
         </div>
 
-        {/* LIGHTING */}
-        <div className="config-card">
-          <div className="card-header">
-            <span>🔆</span> <h2>LIGHTING</h2>
+        <div className="settings-section">
+          <h2>Lighting</h2>
+          <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '10px'}}>
+            <span style={{fontSize: '13px'}}>Intensity</span>
+            <span style={{color: 'var(--gold)'}}>{lightIntensity}%</span>
           </div>
-          <div className="input-group">
-            <div className="label-row">
-              <span>Light Intensity</span>
-              <span className="value">{lightIntensity}%</span>
-            </div>
-            <input type="range" min="0" max="100" value={lightIntensity} onChange={(e) => setLightIntensity(Number(e.target.value))} />
-          </div>
-          <div className="input-group">
-            <div className="label-row">
-              <span>Color temperature</span>
-              <span className="value">{colorTemp}K</span>
-            </div>
-            <input type="range" min="2000" max="8000" value={colorTemp} onChange={(e) => setColorTemp(Number(e.target.value))} />
-          </div>
+          <input 
+            type="range" min="30" max="150" 
+            value={lightIntensity} 
+            onChange={(e) => setLightIntensity(Number(e.target.value))}
+            style={{width: '100%', accentColor: 'var(--gold)'}}
+          />
         </div>
 
-        {/* MATERIALS - All 6 kept */}
-        <div className="config-card">
-          <div className="card-header">
-            <span>🎨</span> <h2>MATERIALS</h2>
-          </div>
-          <div className="materials-grid">
-            {MATERIALS.map((m) => (
-              <button
-                key={m.id}
-                className={`material-btn ${selectedMaterial === m.id ? 'active' : ''}`}
-                onClick={() => setSelectedMaterial(m.id)}
-              >
-                {m.label}
-              </button>
-            ))}
+        <div className="settings-section">
+          <h2>Current Finish</h2>
+          <div className="material-status-badge">
+            <span>🎨</span>
+            {selectedFurniture.materialLabel}
           </div>
         </div>
 
-        {/* COLLECTION */}
-        <div className="config-card">
-          <div className="card-header">
-            <span>🛋️</span> <h2>FURNITURE</h2>
-          </div>
-          <div className="furniture-stack">
-            {FURNITURE_LIST.map((item) => (
-              <button
-                key={item.id}
-                className={`furniture-btn ${selectedFurniture.id === item.id ? 'active' : ''}`}
-                onClick={() => handleFurnitureChange(item)}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
+        <div className="settings-section">
+          <h2>Collection</h2>
+          {FURNITURE_LIST.map((item) => (
+            <button
+              key={item.id}
+              className={`furniture-item ${selectedFurniture.id === item.id ? 'active' : ''}`}
+              onClick={() => setSelectedFurniture(item)}
+            >
+              {item.label}
+            </button>
+          ))}
         </div>
       </aside>
 
-      <main className="viewer-area">
-        <header className="viewer-navbar">
-          <h2>Room Preview</h2>
-          <div className="navbar-actions">
-            <button className="btn-secondary" onClick={handleRender}>Export</button>
-            <button className="btn-primary" onClick={handleRender}>Render</button>
-          </div>
+      <main style={{flex: 1, display: 'flex', flexDirection: 'column', padding: '24px'}}>
+        <header style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
+          <h2 style={{fontSize: '24px'}}>Room Preview</h2>
+          <button className="primary-action-btn" onClick={handleGenerateRender}>
+            Generate Render (PNG)
+          </button>
         </header>
 
-        <div className="main-canvas-frame" style={{ filter: `brightness(${0.4 + lightIntensity / 100})` }}>
-          <div className="canvas-badge">
-             Light Intensity: {lightIntensity}%
-          </div>
-          <Canvas gl={{ preserveDrawingBuffer: true }} camera={{ position: [0, 0, 4], fov: 45 }}>
-            <Experience videoSrc={selectedFurniture.videoSrc} lightIntensity={lightIntensity / 100} />
+        <div style={{
+          flex: 1, 
+          background: '#000', 
+          borderRadius: '20px', 
+          overflow: 'hidden', 
+          position: 'relative',
+          border: '1px solid rgba(212, 175, 55, 0.2)',
+          filter: `brightness(${0.5 + lightIntensity / 100})`
+        }}>
+           <Canvas gl={{ preserveDrawingBuffer: true }} camera={{ position: [0, 0, 4.5], fov: 45 }}>
+            <Experience 
+              videoSrc={selectedFurniture.videoSrc} 
+              lightIntensity={lightIntensity / 100} 
+            />
           </Canvas>
         </div>
       </main>
